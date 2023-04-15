@@ -1,0 +1,41 @@
+name: Check s3-cache-action
+
+on:
+  push:
+
+jobs:
+  check-s3-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - uses: ./restore/
+        with:
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          aws-s3-bucket: ${{ secrets.S3_BUCKET }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          aws-endpoint: ${{ secrets.AWS_ENDPOINT }}
+          aws-s3-bucket-endpoint: false
+          aws-s3-force-path-style: true
+      - name: Install dependencies
+        run: npm ci
+      - uses: ./save/
+        with:
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          aws-s3-bucket: ${{ secrets.S3_BUCKET }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          aws-endpoint: ${{ secrets.AWS_ENDPOINT }}
+          aws-s3-bucket-endpoint: false
+          aws-s3-force-path-style: true
